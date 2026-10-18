@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     mock_failure_rate: float = 0.0
     mock_base_url: str = "http://127.0.0.1:8000"
 
+    rag_distance_threshold: float = 0.35
+    use_fake_embeddings: bool = False
+
     webhook_url: str = ""
 
     cors_origins: list[str] = Field(

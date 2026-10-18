@@ -7,14 +7,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.health import router as health_router
+from app.api.kb import router as kb_router
 from app.config import get_settings
+from app.db.session import get_session_factory
 from app.mock_services import router as mock_router
 from app.mock_services.runtime import reset_mock_runtime
+from app.rag.embedder import build_embedder
+from app.rag.retriever import KnowledgeRetriever, hits_as_dicts
+from app.rag.service import ingest_seed_kb
+from app.tools.kb import set_knowledge_retriever
 
 
 @asynccontextmanager
 async def lifespan(_application: FastAPI) -> AsyncIterator[None]:
-    """Initialize runtime mock chaos settings from environment.
+    """Initialize runtime mock chaos settings and wire KB retriever.
 
     Args:
         _application: FastAPI app instance.
@@ -27,7 +33,35 @@ async def lifespan(_application: FastAPI) -> AsyncIterator[None]:
         latency_ms=settings.mock_latency_ms,
         failure_rate=settings.mock_failure_rate,
     )
+
+    async def _retriever(query: str, top_k: int) -> list[dict[str, object]]:
+        session_factory = get_session_factory()
+        async with session_factory() as session:
+            use_fake: bool | None = True if settings.use_fake_embeddings else None
+            retriever = KnowledgeRetriever(
+                session,
+                embedder=build_embedder(fake=use_fake),
+            )
+            hits = await retriever.search(query, top_k=top_k)
+            return hits_as_dicts(hits)
+
+    set_knowledge_retriever(_retriever)
+
+    # Best-effort seed KB ingest (fake embeddings when no API key).
+    try:
+        session_factory = get_session_factory()
+        async with session_factory() as session:
+            await ingest_seed_kb(
+                session,
+                embedder=build_embedder(
+                    fake=settings.use_fake_embeddings or not bool(settings.llm_api_key)
+                ),
+            )
+    except Exception:  # noqa: BLE001 — startup should not crash without DB
+        pass
+
     yield
+    set_knowledge_retriever(None)
 
 
 def create_app() -> FastAPI:
@@ -51,6 +85,7 @@ def create_app() -> FastAPI:
     )
     application.include_router(health_router)
     application.include_router(mock_router)
+    application.include_router(kb_router)
     return application
 
 

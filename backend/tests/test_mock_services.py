@@ -13,9 +13,11 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from scripts.seed import seed_all
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
+from app.db.models import MockSlot
 from app.db.session import reset_engine
 from app.main import create_app
 from app.mock_services.runtime import reset_mock_runtime
@@ -48,6 +50,9 @@ async def client(db_session: AsyncSession) -> AsyncIterator[AsyncClient]:
         AsyncClient: HTTP client bound to the app.
     """
     await seed_all(db_session)
+    # Ensure open slots exist even if prior test runs booked them.
+    await db_session.execute(update(MockSlot).values(is_booked=False))
+    await db_session.commit()
     application = create_app()
     transport = ASGITransport(app=application)
     async with AsyncClient(transport=transport, base_url="http://test") as http:
@@ -134,10 +139,12 @@ async def test_book_calendar_slot(client: AsyncClient) -> None:
         "/mock/calendar/slots",
         params={
             "date_from": (today + timedelta(days=1)).isoformat(),
-            "date_to": (today + timedelta(days=1)).isoformat(),
+            "date_to": (today + timedelta(days=7)).isoformat(),
         },
     )
-    slot_id = slots_response.json()["slots"][0]["slot_id"]
+    open_slots = slots_response.json()["slots"]
+    assert open_slots, "expected at least one open slot in the next 7 days"
+    slot_id = open_slots[0]["slot_id"]
     create = await client.post(
         "/mock/calendar/bookings",
         json={

@@ -17,6 +17,11 @@ dependencies = [
     "email-validator==2.3.0",
     "httpx==0.28.1",
     "tenacity==9.1.4",
+    "pypdf==6.18.1",
+    "markdown==3.10.3",
+    "trafilatura==2.0.0",
+    "openai==2.54.0",
+    "python-multipart==0.0.22",
 ]
 
 [dependency-groups]
@@ -57,7 +62,16 @@ plugins = ["pydantic.mypy"]
 exclude = ["app/db/migrations/"]
 
 [[tool.mypy.overrides]]
-module = ["pgvector", "pgvector.*"]
+module = [
+    "pgvector",
+    "pgvector.*",
+    "trafilatura",
+    "trafilatura.*",
+    "pypdf",
+    "pypdf.*",
+    "markdown",
+    "markdown.*",
+]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
