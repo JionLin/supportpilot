@@ -145,7 +145,7 @@
 | React / React DOM | 19.2.9（@types/react 19.2.18） | Next 15 peer 支持 ^19；19.x 中 19.2 下载量最大（上周 53,406,139） |
 | TypeScript | 5.9.3 | npm 上周下载 5.9 占 45.2%，最常用 |
 | Tailwind CSS | 3.4.19 | 3.4 线最终补丁；生态/教程最多（npm 上周 24.8%）；使用经典 `tailwind.config.js` + PostCSS（tailwindcss/postcss/autoprefixer） |
-| shadcn/ui | CLI `shadcn@2.3.0` | 用于 Tailwind v3 的 CLI 版本；组件代码复制进项目，无运行时版本 |
+| shadcn/ui | CLI `shadcn@2.3.0` | 用于 Tailwind v3 的 CLI 版本；组件代码复制进项目，无运行时版本。备注：`shadcn@2.3.0 init` 在 Tailwind v3 + `tailwind.config.js` 下通过校验；`add` 因 React 19 peer 交互提示无法非交互完成，Button 按 new-york 风格手写进仓，CLI 版本未改 |
 | Docker Compose | Compose Spec（Docker Compose v2 插件） | 不写 `version:` 字段；镜像全部用精确 tag |
 
 **版本锁定规则：**
