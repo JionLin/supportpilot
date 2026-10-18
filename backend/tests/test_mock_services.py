@@ -224,7 +224,12 @@ async def test_create_return_out_of_window(client: AsyncClient) -> None:
         },
     )
     assert response.status_code == 400
-    assert response.json()["detail"]["code"] == "OUT_OF_RETURN_WINDOW"
+    payload = response.json()
+    code = (
+        payload.get("error", {}).get("code")
+        or payload.get("detail", {}).get("code")
+    )
+    assert code == "OUT_OF_RETURN_WINDOW"
 
 
 @pytest.mark.asyncio

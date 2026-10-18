@@ -6,8 +6,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.admin import router as admin_router
+from app.api.appointments import router as appointments_router
+from app.api.chat import router as chat_router
+from app.api.conversations import router as conversations_router
+from app.api.errors import register_exception_handlers
 from app.api.health import router as health_router
 from app.api.kb import router as kb_router
+from app.api.tickets import router as tickets_router
 from app.config import get_settings
 from app.db.session import get_session_factory
 from app.mock_services import router as mock_router
@@ -47,7 +53,6 @@ async def lifespan(_application: FastAPI) -> AsyncIterator[None]:
 
     set_knowledge_retriever(_retriever)
 
-    # Best-effort seed KB ingest (fake embeddings when no API key).
     try:
         session_factory = get_session_factory()
         async with session_factory() as session:
@@ -83,9 +88,15 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    register_exception_handlers(application)
     application.include_router(health_router)
     application.include_router(mock_router)
     application.include_router(kb_router)
+    application.include_router(chat_router)
+    application.include_router(conversations_router)
+    application.include_router(tickets_router)
+    application.include_router(appointments_router)
+    application.include_router(admin_router)
     return application
 
 
