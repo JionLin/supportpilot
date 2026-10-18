@@ -11,6 +11,23 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    services:
+      db:
+        image: pgvector/pgvector:0.8.7-pg16-bookworm
+        env:
+          POSTGRES_DB: supportpilot
+          POSTGRES_USER: supportpilot
+          POSTGRES_PASSWORD: supportpilot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U supportpilot -d supportpilot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://supportpilot:supportpilot@127.0.0.1:5432/supportpilot
+      EMBEDDING_DIM: "1536"
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -25,6 +42,8 @@ jobs:
         run: uv run ruff check .
       - name: Mypy
         run: uv run mypy app
+      - name: Migrate
+        run: uv run alembic upgrade head
       - name: Pytest
         run: uv run pytest
 

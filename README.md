@@ -12,6 +12,16 @@ cp .env.example .env
 docker compose up --build
 ```
 
+Then apply migrations and seed mock data (from the host, against published Postgres):
+
+```bash
+cd backend
+export DATABASE_URL=postgresql+asyncpg://supportpilot:supportpilot@127.0.0.1:5432/supportpilot
+uv sync --all-groups
+uv run alembic upgrade head
+uv run python -m scripts.seed   # safe to run twice (idempotent)
+```
+
 URLs (after containers are healthy):
 
 | Service  | URL |
@@ -47,7 +57,7 @@ Node version: see `.nvmrc` (`22.23.3`).
 
 ## Current milestone
 
-Step 1 scaffold: monorepo, health API, placeholder frontend showing backend health, Docker Compose, pre-commit, and GitHub Actions CI. Later milestones add DB models, tools, RAG, the agent, and chat UI.
+Step 2: database models, Alembic migrations (pgvector + HNSW), idempotent seed script, and English `seed_kb/` markdown files. Later milestones add mock APIs, tools, RAG, the agent, and chat UI.
 
 ## License
 

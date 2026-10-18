@@ -126,7 +126,7 @@
 | SQLAlchemy | 2.0.55 | 2.0 线最新补丁（2.1 太新）；pypistats 近 30 天下载 329,827,483 |
 | Alembic | 1.18.5 | 1.18 线最终补丁 |
 | asyncpg | 0.31.0 | 上一成熟版本（2025-11） |
-| psycopg | 3.2.13 | 3.2 线最终补丁；满足 checkpointer >=3.2 |
+| psycopg | 3.2.13（`psycopg[binary]==3.2.13`） | 3.2 线最终补丁；满足 checkpointer >=3.2。偏差说明：纯 `psycopg==3.2.13` 在无系统 libpq 的环境无法导入，Alembic 同步迁移改用 `psycopg[binary]` 同版本二进制额外依赖 |
 | psycopg-pool | 3.2.8 | 3.2 线最终补丁 |
 | pgvector（Python） | 0.4.2 | 上一成熟版本 |
 | httpx | 0.28.1 | 长期稳定版 |
