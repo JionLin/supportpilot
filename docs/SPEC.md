@@ -134,6 +134,7 @@
 | trafilatura | 2.0.0 | 2.0 长期稳定版（2024-12） |
 | pypdf | 6.18.1 | 稳定补丁版 |
 | markdown | 3.10.3 | 3.10 线最终补丁 |
+| pyyaml | 6.0.3 | 偏差：原表未列；evals/cases.yaml 解析依赖，M9 起精确钉死 |
 | email-validator | 2.3.0 | 偏差：原表未列；Pydantic `EmailStr` 运行时依赖，M2 起精确钉死 |
 | python-multipart | 0.0.22 | 偏差：原表未列；FastAPI `UploadFile` 依赖，M4 起精确钉死 |
 | pytest | 8.4.2 | 8.x 最终版本，插件生态最成熟 |

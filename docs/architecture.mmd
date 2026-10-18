@@ -1,0 +1,14 @@
+flowchart LR
+  UI[Next.js UI<br/>Chat / Admin] -->|REST + SSE| API[FastAPI Backend]
+  API --> G[LangGraph Agent]
+  G --> Guard[guard]
+  Guard --> Agent[agent LLM+tools]
+  Agent -->|tool_calls| Tools[tools node]
+  Tools --> Agent
+  Agent -->|final| Finalize[finalize]
+  Agent -->|limits/handoff| Handoff[handoff]
+  Tools --> RAG[RAG pgvector]
+  Tools --> Mock[Mock APIs<br/>orders shipping calendar CRM]
+  G --> PG[(PostgreSQL + pgvector)]
+  RAG --> PG
+  Handoff -->|optional webhook| Ext[n8n / Slack]
