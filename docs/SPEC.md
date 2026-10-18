@@ -108,7 +108,7 @@
 
 | 组件 | 锁定版本 | 说明 |
 |---|---|---|
-| Python | 3.12（Docker：`python:3.12.15-slim-bookworm`） | pypistats 近 30 天 FastAPI 下载中 3.12 占 44.4%（3.11 21.8%、3.13 15.6%），部署最广 |
+| Python | 3.12（Docker：`python:3.12.15-slim-bookworm`；本地 uv：`3.12.13`） | Docker 仍用锁定镜像 tag。偏差：`uv python install 3.12.15` 无可用下载（cpython-3.12.15-linux-x86_64-gnu），本地改用同线最近可用补丁 `3.12.13`（`backend/.python-version`） |
 | uv | 0.11.33 | 0.11 线最终补丁（2026-07） |
 | FastAPI | 0.135.3 | 2026-04 发布、经过半年检验；要求 pydantic>=2.9、starlette>=0.46 |
 | Starlette | 0.52.1 | 0.x 最后版本，满足 FastAPI>=0.46；避开新的 1.x |
