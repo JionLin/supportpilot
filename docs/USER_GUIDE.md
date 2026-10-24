@@ -17,7 +17,7 @@ For a short overview, see the root [README.md](../README.md). For product/spec d
   - **Next.js** chat UI (SSE streaming) and admin pages (KB, traces, tickets, mock chaos)
 - Runnable locally via **Docker Compose** or local backend + frontend against Postgres/pgvector
 - Compatible with any **OpenAI-compatible** LLM endpoint via env vars
-- Testable without a paid API key (Fake LLM in unit tests; Fake embeddings when `LLM_API_KEY` is empty)
+- Testable without a paid API key (Fake LLM in unit tests; Fake embeddings when the effective embedding API key is unset)
 
 ### Is not
 
@@ -35,7 +35,7 @@ For a short overview, see the root [README.md](../README.md). For product/spec d
 | **Node.js** | Version from [`.nvmrc`](../.nvmrc): **22.23.3** (use `nvm use` or matching Docker image) |
 | **uv** | Python package manager for `backend/` (project targets Python 3.12) |
 | **PostgreSQL 16 + pgvector** | Compose uses `pgvector/pgvector:0.8.7-pg16-bookworm`. For local-only apps, run an equivalent Postgres with the `vector` extension |
-| **LLM API key (optional)** | Required for live Chat demos and `evals.run_evals`. Empty key → Fake embeddings for RAG/CI; chat calls will not reach a real model |
+| **LLM API key (optional)** | Required for live Chat demos and `evals.run_evals`. Chat needs `LLM_API_KEY`. Embeddings use `EMBEDDING_API_KEY` or fall back to `LLM_API_KEY`; if that effective key is empty → Fake embeddings for RAG/CI |
 
 Also useful: `git`, a browser, and (for demos) Loom/OBS per [demo-script.md](demo-script.md).
 
@@ -53,9 +53,11 @@ Variables from [`.env.example`](../.env.example):
 
 | Variable | Purpose | Example / default |
 |----------|---------|-------------------|
-| `LLM_BASE_URL` | OpenAI-compatible API base | `https://api.openai.com/v1` |
-| `LLM_API_KEY` | API key (leave empty for Fake embeddings / CI) | *(empty)* |
+| `LLM_BASE_URL` | OpenAI-compatible chat API base | `https://api.openai.com/v1` |
+| `LLM_API_KEY` | Chat API key (required for live Chat / evals) | *(empty)* |
 | `LLM_MODEL` | Chat model id | `gpt-4o-mini` |
+| `EMBEDDING_BASE_URL` | Optional separate embedding API base; empty → reuse `LLM_BASE_URL` | *(empty)* |
+| `EMBEDDING_API_KEY` | Optional separate embedding API key; empty → reuse `LLM_API_KEY`. If the resolved key is still empty → Fake embeddings | *(empty)* |
 | `EMBEDDING_MODEL` | Embedding model id | `text-embedding-3-small` |
 | `EMBEDDING_DIM` | Vector dimension (must match model / DB column) | `1536` |
 | `DATABASE_URL` | Async SQLAlchemy URL | Compose service: `postgresql+asyncpg://supportpilot:supportpilot@db:5432/supportpilot` · Host migrate/seed: same with `127.0.0.1` |
@@ -70,7 +72,7 @@ Variables from [`.env.example`](../.env.example):
 | `NEXT_PUBLIC_API_URL` | Browser → backend origin | `http://127.0.0.1:8000` |
 | `NEXT_PUBLIC_ADMIN_PASSWORD` | Frontend admin gate (sent as `X-Admin-Password`) | `change-me` |
 
-Related settings also exist in code (`USE_FAKE_EMBEDDINGS`, `RAG_DISTANCE_THRESHOLD`, CORS origins) via `app.config.Settings`; the table above covers what `.env.example` documents for operators.
+Related settings also exist in code (`USE_FAKE_EMBEDDINGS`, `RAG_DISTANCE_THRESHOLD`, CORS origins) via `app.config.Settings`; the table above covers what `.env.example` documents for operators. Admin **Settings** shows the resolved embedding base URL and whether an embedding API key is configured (boolean only — never the raw key).
 
 ### LLM provider examples (OpenAI-compatible)
 
@@ -174,7 +176,7 @@ Useful UI routes after start:
 
 Open http://127.0.0.1:3000/chat.
 
-**For a meaningful live demo, set `LLM_API_KEY` (and matching `LLM_BASE_URL` / `LLM_MODEL`).** Without a key, embeddings use a deterministic Fake embedder (good for CI/seed); the chat path still constructs a real `ChatOpenAI` client and will not behave like the Fake LLM used in unit tests.
+**For a meaningful live demo, set `LLM_API_KEY` (and matching `LLM_BASE_URL` / `LLM_MODEL`).** Optionally set `EMBEDDING_BASE_URL` / `EMBEDDING_API_KEY` for a separate embedding endpoint; leave them empty to reuse `LLM_*`. When the resolved embedding key is unset, embeddings use a deterministic Fake embedder (good for CI/seed); the chat path still constructs a real `ChatOpenAI` client and will not behave like the Fake LLM used in unit tests.
 
 ### Sample questions (also as UI chips)
 
@@ -210,7 +212,7 @@ Admin pages are behind a shared password gate. Use the same value as `ADMIN_PASS
 | **Knowledge** (`/admin/knowledge`) | List documents; upload Markdown/PDF or submit a URL; watch ingest status / chunk counts; delete docs |
 | **Conversations** (`/admin/conversations`) | List sessions; open a session for **trace** (nodes, tool I/O, latency, attempts, errors) |
 | **Tickets** (`/admin/tickets`) | List handoff tickets; update status (`open` / `in_progress` / `resolved`) |
-| **Settings** (`/admin/settings`) | Read current LLM/guardrail/RAG settings; adjust **mock failure rate** and **latency** (chaos) to demo retries → handoff |
+| **Settings** (`/admin/settings`) | Read current LLM/guardrail/RAG settings (including resolved **Embedding Base URL** and **embedding key configured** flag); adjust **mock failure rate** and **latency** (chaos) to demo retries → handoff |
 
 API counterparts (OpenAPI at `/docs`): `/api/kb/*`, `/api/conversations/*`, `/api/tickets`, `/api/admin/settings`, `/api/admin/mock-chaos`.
 
@@ -263,7 +265,7 @@ uv run pytest
 ```
 
 Agent graph tests inject **`ScriptedFakeChatModel`** (`app.agent.fake_llm`) — no network.  
-When `LLM_API_KEY` is empty, embeddings use **FakeEmbedder** (deterministic vectors).
+When the resolved embedding API key is empty (`EMBEDDING_API_KEY` and fallback `LLM_API_KEY` both unset), embeddings use **FakeEmbedder** (deterministic vectors).
 
 Frontend:
 
@@ -309,7 +311,7 @@ The same diagram appears as Mermaid in the root README.
 
 - Mock store / calendar / CRM only — no real Shopify, payments, or multi-tenant auth
 - Admin auth is a shared password header for demo purposes only
-- Without `LLM_API_KEY`, embeddings are fake (fine for CI); live Chat needs a real tool-calling model for demos
+- Without a resolved embedding API key, embeddings are fake (fine for CI); live Chat needs a real tool-calling model (`LLM_API_KEY`) for demos
 - Optional n8n workflow example (SPEC M11) is not included
 - Eval numbers exist only after you run `evals.run_evals` with a real key — never invent them for portfolio claims
 

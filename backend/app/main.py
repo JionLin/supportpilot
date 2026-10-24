@@ -59,7 +59,8 @@ async def lifespan(_application: FastAPI) -> AsyncIterator[None]:
             await ingest_seed_kb(
                 session,
                 embedder=build_embedder(
-                    fake=settings.use_fake_embeddings or not bool(settings.llm_api_key)
+                    fake=settings.use_fake_embeddings
+                    or not bool(settings.resolved_embedding_api_key)
                 ),
             )
     except Exception:  # noqa: BLE001 — startup should not crash without DB

@@ -64,6 +64,20 @@ export default function SettingsAdminPage() {
               <dd>{settings.rag_distance_threshold}</dd>
             </div>
             <div>
+              <dt className="text-muted-foreground">Embedding Base URL</dt>
+              <dd className="break-all font-mono text-xs">
+                {settings.embedding_base_url}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Embedding API Key</dt>
+              <dd>
+                {settings.embedding_api_key_configured
+                  ? "configured"
+                  : "not set"}
+              </dd>
+            </div>
+            <div>
               <dt className="text-muted-foreground">Embedding</dt>
               <dd>
                 {settings.embedding_model} ({settings.embedding_dim}d)
