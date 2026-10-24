@@ -44,3 +44,4 @@ Thumbs.db
 
 # Uploads (transient agent input)
 uploads/
+backend/data/

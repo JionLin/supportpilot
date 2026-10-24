@@ -25,6 +25,8 @@ from app.db.models import (
     MockSlot,
 )
 from app.db.session import get_session_factory, reset_engine
+from app.rag.embedder import build_embedder
+from app.rag.service import ingest_seed_kb
 
 logger = logging.getLogger(__name__)
 
@@ -469,6 +471,9 @@ async def seed_all(session: AsyncSession) -> dict[str, int]:
     await _upsert_kb_documents(session)
     await _ensure_sample_crm_and_returns(session)
     await session.commit()
+
+    # Embed seed markdown with deterministic fake vectors for offline demos/tests.
+    await ingest_seed_kb(session, embedder=build_embedder(fake=True))
 
     counts = {
         "mock_orders": int(
