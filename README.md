@@ -126,6 +126,13 @@ uv run python -m evals.run_evals
 
 `evals/report.md` ships as a placeholder stating that **no fabricated metrics** are present. Pass rates appear only after a real run (model + date + case count recorded by the script).
 
+## Documentation
+
+- **[docs/USER_GUIDE.md](docs/USER_GUIDE.md)** — English how-to (run, env vars, Chat/Admin, tools, tests, limitations). Prefer this for GitHub / Upwork.
+- **[docs/zh/使用说明书.md](docs/zh/使用说明书.md)** — Simplified Chinese notes for the author to learn the project (not the public homepage).
+- Architecture diagram: [docs/architecture.png](docs/architecture.png) (source [architecture.mmd](docs/architecture.mmd)); also embedded as Mermaid above.
+- Spec: [docs/SPEC.md](docs/SPEC.md)
+
 ## Demo script
 
 See [docs/demo-script.md](docs/demo-script.md) for a 2–3 minute Loom/OBS shot list.
