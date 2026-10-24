@@ -74,6 +74,8 @@ async def get_admin_settings() -> dict[str, Any]:
     return {
         "llm_model": settings.llm_model,
         "llm_base_url": settings.llm_base_url,
+        "embedding_base_url": settings.resolved_embedding_base_url,
+        "embedding_api_key_configured": bool(settings.resolved_embedding_api_key),
         "embedding_model": settings.embedding_model,
         "embedding_dim": settings.embedding_dim,
         "max_steps": settings.max_steps,

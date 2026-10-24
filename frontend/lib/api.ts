@@ -86,6 +86,8 @@ export type Ticket = {
 export type AdminSettings = {
   llm_model: string;
   llm_base_url: string;
+  embedding_base_url: string;
+  embedding_api_key_configured: boolean;
   embedding_model: string;
   embedding_dim: number;
   max_steps: number;

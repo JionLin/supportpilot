@@ -104,8 +104,8 @@ class OpenAICompatEmbedder:
         """
         self.settings = settings or get_settings()
         self._client = AsyncOpenAI(
-            api_key=self.settings.llm_api_key or "not-set",
-            base_url=self.settings.llm_base_url,
+            api_key=self.settings.resolved_embedding_api_key or "not-set",
+            base_url=self.settings.resolved_embedding_base_url,
         )
         self.model = self.settings.embedding_model
         self.dim = self.settings.embedding_dim
@@ -170,7 +170,11 @@ def build_embedder(*, fake: bool | None = None) -> Embedder:
         Embedder: Configured embedder instance.
     """
     settings = get_settings()
-    use_fake = fake if fake is not None else not bool(settings.llm_api_key)
+    use_fake = (
+        fake
+        if fake is not None
+        else not bool(settings.resolved_embedding_api_key)
+    )
     if use_fake:
         return FakeEmbedder(dim=settings.embedding_dim)
     return OpenAICompatEmbedder(settings)

@@ -63,7 +63,7 @@ Without Docker for apps: run Postgres (pgvector), then `uv run uvicorn app.main:
 
 ## LLM provider examples
 
-All via OpenAI-compatible `ChatOpenAI` (`LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL`):
+Chat via OpenAI-compatible `ChatOpenAI` (`LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL`). Embeddings use optional `EMBEDDING_BASE_URL` / `EMBEDDING_API_KEY` (empty → reuse `LLM_*`):
 
 ```bash
 # OpenAI
@@ -79,7 +79,7 @@ LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
 LLM_MODEL=gemini-2.0-flash
 ```
 
-Tests and CI use **Fake LLM / Fake embeddings** — no API key required.
+Tests and CI use **Fake LLM / Fake embeddings** — no API key required (Fake embeddings when the resolved embedding key is unset).
 
 ## API & tools
 
@@ -140,7 +140,7 @@ See [docs/demo-script.md](docs/demo-script.md) for a 2–3 minute Loom/OBS shot 
 ## Known limitations
 
 - Mock store / calendar / CRM only — no real Shopify, payments, or multi-tenant auth
-- Embeddings fall back to deterministic fake vectors when `LLM_API_KEY` is empty (fine for CI; use a real embedding model for semantic RAG demos)
+- Optional `EMBEDDING_BASE_URL` / `EMBEDDING_API_KEY` (empty → reuse `LLM_*`); Fake embeddings when the resolved embedding key is unset (fine for CI; use a real embedding model for semantic RAG demos)
 - Optional n8n workflow (SPEC M11) not included
 - Admin auth is a shared password header for demo purposes only
 

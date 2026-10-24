@@ -19,8 +19,28 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_model: str = "gpt-4o-mini"
 
+    embedding_base_url: str = ""
+    embedding_api_key: str = ""
     embedding_model: str = "text-embedding-3-small"
     embedding_dim: int = 1536
+
+    @property
+    def resolved_embedding_base_url(self) -> str:
+        """Return embedding API base URL, falling back to LLM base URL.
+
+        Returns:
+            str: Effective OpenAI-compatible base URL for embeddings.
+        """
+        return self.embedding_base_url or self.llm_base_url
+
+    @property
+    def resolved_embedding_api_key(self) -> str:
+        """Return embedding API key, falling back to LLM API key.
+
+        Returns:
+            str: Effective API key for embeddings.
+        """
+        return self.embedding_api_key or self.llm_api_key
 
     database_url: str = (
         "postgresql+asyncpg://supportpilot:supportpilot@db:5432/supportpilot"
